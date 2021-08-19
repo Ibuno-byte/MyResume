@@ -1,6 +1,8 @@
-var express = require("express")
-var bodyParser = require("body-parser")
-var mongoose = require("mongoose")
+var express = require("express");
+var bodyParser = require("body-parser");
+var mongoose = require("mongoose");
+require('dotenv').config()
+const {MONGO_URI, PORT} = process.env
 
 const app = express()
 
@@ -10,7 +12,7 @@ app.use(bodyParser.urlencoded({
     extended:true
 }))
 
-mongoose.connect('mongodb://localhost:27017/mydb',{
+mongoose.connect(MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 });
@@ -20,15 +22,17 @@ var db = mongoose.connection;
 db.on('error',()=>console.log("Error in Connecting to Database"));
 db.once('open',()=>console.log("Connected to Database"))
 
-app.post("/create-info",(req,res)=>{
+app.post("/create-info",(req, res) => {
     var name = req.body.name;
     var email = req.body.email;
     var contactMessage = req.body.contactMessage;
+    var date = new Date();
 
     var data = {
         "name": name,
         "email" : email,
-        "contactMessage": contactMessage
+        "contactMessage": contactMessage,
+        "createdAt": date
     }
 
     db.collection('messages').insertOne(data, (err, collection)=>{
@@ -48,7 +52,7 @@ app.get("/",(req,res)=>{
         "Allow-access-Allow-Origin": '*'
     })
     return res.redirect('index.html');
-}).listen(4000);
+}).listen(PORT);
 
 
-console.log("Listening on PORT 4000");
+console.log(`Listening on PORT ${PORT}`);
